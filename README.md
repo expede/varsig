@@ -24,8 +24,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 # Abstract
 
-> [!abstract]
-> Varsig is a [multiformat][Multiformats] for describing signatures over IPLD data and raw bytes in a way that preserves information about the payload and canonicalization information.
+Varsig is a [multiformat][Multiformats] for describing signatures over IPLD data and raw bytes in a way that preserves information about the payload and canonicalization information.
 
 # Introduction
 
@@ -173,7 +172,8 @@ Ipld::Map([
 ]);
 ```
 
-Note that the IPLD parser has dropped the `role: "admin"` key.
+> [!NOTE]
+> Above, IPLD parser has dropped the `role: "admin"` key.
 
 The `"sig"` field is then removed, and the remaining fields serialized to binary;
 
