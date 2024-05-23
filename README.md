@@ -75,7 +75,7 @@ Since IPLD is deterministically encoded, it can be tempting to rely on canonical
 }
 ```
 
-Unfortunately this opens the potential for [canonicalization attacks]. Parsers for certain formats — such as JSON — are known to handle duplicate entries differently. IPLD MUST to be serialized to a canonical form before checking the signature. Without careful handling, it is possible to fail to check if any additional fields have been added to the payload which will be parsed by the application. 
+Unfortunately this opens the potential for [canonicalization attacks]. [Parsers for certain formats][Taxonomy of Attacks] — such as JSON — are known to [handle duplicate entries differently][How (not) to sign a JSON object]. IPLD MUST to be serialized to a canonical form before checking the signature. Without careful handling, it is possible to fail to check if any additional fields have been added to the payload which will be parsed by the application. 
 
 > An object whose names are all unique is interoperable in the sense that all software implementations receiving that object will agree on the name-value mappings.  When the names within an object are not unique, the behavior of software that receives such an object is unpredictable.  Many implementations report the last name/value pair only.  Other implementations report an error or fail to parse the object, and some implementations report all of the name/value pairs, including duplicates.
 >
@@ -103,7 +103,18 @@ The above can be [quite subtle][PKI Layer Cake]. Here is a step by step example 
 An application receives some block of data, as binary. It checks the claimed CID, which passes validation.
 
 ```
-%x7ba202022726f6c65223a202275736572222ca202022726f6c65223a202261646d696e222ca2020226c696e6b73223a205ba202020207b222f223a20226261666b72656964623271336b7467746c6d3579696f3762756a337379707967686a7466683565726e737465716d616b66347032633562776d7969227d2c20202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020207b222f223a20226261666b72656963373579646735766b773332346f716b636d716c74667663336b6976796e67716b69626a6f7973647769696c616b68347a356665227d2ca202020207b222f223a20226261666b726569666664697a3672616634367a727233623275737566677a35666f34346167676d6f637a347a61707072366b6868686c6a63647079227da20205d2ca202022736967223a2022387566615339773343474e386362515455536f4c31693765614b69574c53587344324c625a566d764d397a4622a7d
+0x7ba202022726f6c65223a202275736572222ca202022726f6c65223a202261646d696e222ca202
+0226c696e6b73223a205ba202020207b222f223a20226261666b72656964623271336b7467746c6d
+3579696f3762756a337379707967686a7466683565726e737465716d616b66347032633562776d79
+69227d2c202020202020202020202020202020202020202020202020202020202020202020202020
+20202020202020202020202020202020202020202020202020202020202020202020202020202020
+20202020202020202020202020202020202020202020202020202020202020202020202020202020
+2020202020202020202020207b222f223a20226261666b72656963373579646735766b773332346f
+716b636d716c74667663336b6976796e67716b69626a6f7973647769696c616b68347a356665227d
+2ca202020207b222f223a20226261666b726569666664697a3672616634367a72723362327573756
+6677a35666f34346167676d6f637a347a61707072366b6868686c6a63647079227da20205d2ca202
+022736967223a2022387566615339773343474e386362515455536f4c31693765614b69574c53587
+344324c625a566d764d397a4622a7d
 ```
 
 Decoded to a string, the above reads as follows:
@@ -189,7 +200,7 @@ Data that has already been parsed to an in-memory IPLD representation can be can
 
 Data purporting to conform to an IPLD encoding (such as [DAG-JSON]) MUST be validated prior to signature verification. This MAY be as simple as round-trip decoding/encoding the JSON and checking that the hash matches. A validation error MUST be signalled if it does not match.
 
-> [Implementers] may provide an opt-in for systems where round-trip determinism is a desireable [sic] feature and backward compatibility with old, non-strict data is unnecessary.
+> Implementers may provide an opt-in for systems where round-trip determinism is a desireable [sic] feature and backward compatibility with old, non-strict data is unnecessary.
 >
 > — [DAG-JSON Spec][DAG-JSON]
 
@@ -238,41 +249,30 @@ Including the varsig header in the payload that is signed over is RECOMMENDED. D
 
 The header contains metadata about both the signature and payload that was signed over. Since the 
 
+The prefix of the signature algorithm. This is often the [multicodec] of the associated public key, but MAY be unique for the signature type. The code MAY live outside the multicodec table. This field MUST act as a discriminant for how many expected fields come in the varsig body, and what each of them mean.
+
 A varsig header MUST begin with one or more varsig segments that desicribe.....
 
 ```abnf
 varsig-header = %x34 varsig-header
-multibase-prefix = ALPHA
 varsig-header = unsigned-varint
 signature = *OCTET; Zero or more segments required by the kind of varsig (e.g. raw bytes, hash algorithm, etc)
 ```
 
-
-``` abnf
-┌──────────────────────────────┬───────────────────────────┐
-│ signature algorithm metadata │ payload encoding metadata │
-└──────────────────────────────┴───────────────────────────┘
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                Varsig Header                                 │
+│ ┌───────────────┬──────────────────────────────┬───────────────────────────┐ │
+│ │ Varsig Prefix │ Signature Algorithm Metadata │ Payload Encoding Metadata │ │
+│ └───────────────┴──────────────────────────────┴───────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-```abnf
-varsig-header = 
-varsig-sig-meta = 1*unsigned-varint ; Usually the public key code from Multicodec
-varsig-payload-meta = 1*unsigned-varint
-```
+### Varsig Prefix
 
-## Signature
+The varsig prefix MUST be the constant `0x34`.
 
-The signature 
-
-## Varsig Prefix
-
-The varsig prefix MUST be `0x34`.
-
-## Signature Header
-
-The prefix of the signature algorithm. This is often the [multicodec] of the associated public key, but MAY be unique for the signature type. The code MAY live outside the multicodec table. This field MUST act as a discriminant for how many expected fields come in the varsig body, and what each of them mean.
-
-## Varsig Body
+### Signature Algorithm Metadata
 
 The varsig body MUST consist of one or more segments, and MUST be defined by the signature algorithm.
 
@@ -282,7 +282,7 @@ Some examples include:
 * CID of [DKIM] certification transparency record, and raw signature bytes
 * Hash algorithm multicodec prefix, data encoding prefix, signature counter, nonce, HMAC, and raw signature bytes
 
-# Payload Encoding
+### Payload Encoding Metadata
 
 The [IPLD] data model is encoding agnostic by design. This is very convenient in many applications, such as making for very convenient conversions between types for transmission versus encoding. Unfortunately signatures require signing over specific bytes, and thus over a specific encoding of the data.
 
@@ -296,9 +296,9 @@ encoding-info
   / %x0129 ; DAG-JSON multicodec prefix
   / %x6A77 ; JWT
   / %xE191 encoding-info ; EIP-191
-  
-message-byte-length = unsigned-varint
 ```
+
+MESSAGE LENGTH FIXME
 
 To manage this, it is RECOMMENDED that varsig types include a nested encoding multiformat. For example, here's a 2048-bit RS256 signature over some DAG-CBOR:
 
@@ -338,51 +338,75 @@ Here is another showing a canonicalized [JWT] signed with [`secp256k1`]:
                   Keccak-256
 ```
 
-# Registry of Common Signature Algorithms
+
+
+
+
+
+
+
+
+
+
+## Signature
+
+The signature 
+
+# Common Signature Algorithms
 
 Below are a few common signature headers and their fields.
 
 ## RSA
 
-RSASSA-PKCS #1 v1.5 signatures MUST include the following segments:
+[RSASSA-PKCS #1 v1.5] signatures MUST include the following segments:
 
 ``` abnf
-rsa-varsig = rsa-varsig-header rsa-hash-algorithm signature-byte-length encoding-info sig-bytes
-
-rsa-varsig-header = %x1205 ; RSASSA-PKCS #1 v1.5
+rsa-varsig = rsa-varsig-header rsa-hash-algorithm signature-byte-length
+rsa-prefix = %x1205 ; RSASSA-PKCS #1 v1.5
 rsa-hash-algorithm = unsigned-varint
 signature-byte-length = unsigned-varint
-encoding-info = 1*unsigned-varint ; Number of segments defined by the encoding header
-sig-bytes = *OCTET
 ```
 
 ### Example: RS256
 
 | Segment              | Hexadecimal | Unsigned Varint | Comment                                 | 
 |----------------------|-------------|-----------------|-----------------------------------------|
-| `rsa-varsig-header`  | `%x1205`    | `%x8524`        | RSASSA-PKCS #1 v1.5 [multicodec] prefix |
-| `rsa-hash-algorithm` | `%x12`      | `%x12`          | SHA2-256 [multicodec] prefix            |
+| `rsa-prefix`  | `0x1205`    | `0x8524`        | RSASSA-PKCS #1 v1.5 [multicodec] prefix |
+| `rsa-hash-algorithm` | `0x12`      | `0x12`          | SHA2-256 [multicodec] prefix            |
 
 ### Example: RS512
 
 | Segment              | Hexadecimal | Unsigned Varint | Comment                                 | 
 |----------------------|-------------|-----------------|-----------------------------------------|
-| `rsa-varsig-header`  | `%x1205`    | `%x8524`        | RSASSA-PKCS #1 v1.5 [multicodec] prefix |
-| `rsa-hash-algorithm` | `%x13`      | `%x13`          | SHA2-512 [multicodec] prefix            |
+| `rsa-prefix`  | `0x1205`    | `0x8524`        | RSASSA-PKCS #1 v1.5 [multicodec] prefix |
+| `rsa-hash-algorithm` | `0x13`      | `0x13`          | SHA2-512 [multicodec] prefix            |
 
-## Ed25519
+## [EdDSA]
 
 ``` abnf
-ed25519-varsig = ed25519-varsig-header encoding-info sig-bytes
-
-ed25519-varsig-header = %xED ; Ed25519 multicodec prefix
-encoding-info = 1*unsigned-varint
-sig-bytes = 32(OCTET)
+eddsa-varsig = ed25519-prefix eddsa-curve eddsa-hash-algorithm
+eddsa-prefix = %xED
+eddsa-curve = unsigned-varint
+eddsa-hash-algorithm = unsigned-varint
 ```
+
+### Example: Ed25519
 
 | Segment                 | Hexadecimal | Unsigned Varint | Comment                         | 
 |-------------------------|-------------|-----------------|---------------------------------|
-| `ed25519-varsig-header` | `%xED`      | `%xED01`        | Ed25519 key [multicodec] prefix |
+| `eddsa-prefix`          | `0xED`      | `0xED01`        | EdDSA prefix
+| `eddsa-curve`           | `0xEC`      | `0xEC01`        | Curve25519 [multicodec] prefix | DOUBLE CHECK
+| `eddsa-hash-algorithm`  | `0x13`      | `0x13`          | SHA2-512 [multicodec] prefix    |
+
+### Example: Ed448
+
+0x1203
+
+| Segment                 | Hexadecimal | Unsigned Varint | Comment                         | 
+|-------------------------|-------------|-----------------|---------------------------------|
+| `eddsa-prefix`          | `0xED`      | `0xED01`        | EdDSA prefix
+| `eddsa-curve`           | FIXME      | FIXME        | Curve448 [multicodec] prefix | DOUBLE CHECK
+| `eddsa-hash-algorithm`  | `0x19`      | `0x19`          | SHAKE-256 [multicodec] prefix    |
 
 ## ECDSA
 
@@ -403,17 +427,14 @@ Here are a few examples encoded as varsig:
 
 ``` abnf
 es256-varsig = es256-varsig-header es256-hash-algorithm encoding-info sig-bytes
-
-es256-varsig-header = %x1200 ; P-256 multicodec prefix
+es256-prefix = %x1200 ; P-256 multicodec prefix
 es256-hash-algorithm = %x12 ; SHA2-256
-encoding-info = 1*unsigned-varint
-sig-bytes = 64(OCTET)
 ```
 
 | Segment                | Hexadecimal | Unsigned Varint | Comment                      | 
 |------------------------|-------------|-----------------|------------------------------|
-| `es256-varsig-header`  | `%x1200`    | `%x8024`        | P-256 [multicodec] prefix    |
-| `es256-hash-algorithm` | `%x12`      | `%x12`          | SHA2-256 [multicodec] prefix |
+| `es256-prefix`  | `0x1200`    | `0x8024`        | P-256 [multicodec] prefix    |
+| `es256-hash-algorithm` | `0x12`      | `0x12`          | SHA2-256 [multicodec] prefix |
 
 ### Example: ES256K
 
@@ -428,8 +449,8 @@ sig-bytes = 64(OCTET)
 
 | Segment                 | Hexadecimal | Unsigned Varint | Comment                        | 
 |-------------------------|-------------|-----------------|--------------------------------|
-| `es256k-varsig-header`  | `%xE7`      | `%xE701`        | secp256k1 [multicodec] prefix  |
-| `es256k-hash-algorithm` | `%x12`      | `%x12`          | SHA2-256 [multicodec] prefix   |
+| `es256k-varsig-header`  | `0xE7`      | `0xE701`        | secp256k1 [multicodec] prefix  |
+| `es256k-hash-algorithm` | `0x12`      | `0x12`          | SHA2-256 [multicodec] prefix   |
 
 ### Example: ES512
 
@@ -444,15 +465,8 @@ sig-bytes = 128(OCTET)
 
 | Segment                | Hexadecimal | Unsigned Varint | Comment                      | 
 |------------------------|-------------|-----------------|------------------------------|
-| `es512-varsig-header`  | `%x1202`    | `%x8224`        | P-521 [multicodec] prefix    |
-| `es512-hash-algorithm` | `%x13`      | `%x13`          | SHA2-512 [multicodec] prefix |
-
-# 6 Further Reading
-
-* [Canonicalization Attacks Against MACs and Signatures][canonicalization attacks]
-* [How (not) to sign a JSON object]
-* [A Taxonomy of Attacks against XML Digital Signatures & Encryption][Taxonomy of Attacks]
-* [PKI Layer Cake]
+| `es512-varsig-header`  | `0x1202`    | `0x8224`        | P-521 [multicodec] prefix    |
+| `es512-hash-algorithm` | `0x13`      | `0x13`          | SHA2-512 [multicodec] prefix |
 
 <!-- Internal Links -->
 
@@ -484,3 +498,5 @@ sig-bytes = 128(OCTET)
 [multicodec]: https://github.com/multiformats/multicodec
 [raw binary multicodec]: https://github.com/multiformats/multicodec/blob/master/table.csv#L40
 [unsigned varint]: https://github.com/multiformats/unsigned-varint
+[EdDSA]: https://datatracker.ietf.org/doc/html/rfc8032
+[RSASSA-PKCS #1 v1.5]: https://www.rfc-editor.org/rfc/rfc2313
