@@ -254,9 +254,9 @@ The prefix of the signature algorithm. This is often the [multicodec] of the ass
 A varsig header MUST begin with one or more varsig segments that desicribe.....
 
 ```abnf
-varsig-header = %x34 varsig-header
-varsig-header = unsigned-varint
-signature = *OCTET; Zero or more segments required by the kind of varsig (e.g. raw bytes, hash algorithm, etc)
+varsig-header = %x34 signature-algorithm-metadata payload-encoding-metadata
+signature-algorithm-metadata = unsigned-varint
+payload-encoding-metadata = unsigned-varint
 ```
 
 ```
@@ -268,39 +268,7 @@ signature = *OCTET; Zero or more segments required by the kind of varsig (e.g. r
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Varsig Prefix
-
-The varsig prefix MUST be the constant `0x34`.
-
-### Signature Algorithm Metadata
-
-The varsig body MUST consist of one or more segments, and MUST be defined by the signature algorithm.
-
-Some examples include:
-
-* Raw signature bytes only
-* CID of [DKIM] certification transparency record, and raw signature bytes
-* Hash algorithm multicodec prefix, data encoding prefix, signature counter, nonce, HMAC, and raw signature bytes
-
-### Payload Encoding Metadata
-
-The [IPLD] data model is encoding agnostic by design. This is very convenient in many applications, such as making for very convenient conversions between types for transmission versus encoding. Unfortunately signatures require signing over specific bytes, and thus over a specific encoding of the data.
-
-To facilitate this, the type `encoding-info` MAY be used:
-
-``` abnf
-encoding-info
-  = %x5F   ; Single verbatim payload (without key)
-  / %x70   ; DAG-PB multicodec prefix
-  / %x71   ; DAG-CBOR multicodec prefix
-  / %x0129 ; DAG-JSON multicodec prefix
-  / %x6A77 ; JWT
-  / %xE191 encoding-info ; EIP-191
-```
-
-MESSAGE LENGTH FIXME
-
-To manage this, it is RECOMMENDED that varsig types include a nested encoding multiformat. For example, here's a 2048-bit RS256 signature over some DAG-CBOR:
+For example, here's a 2048-bit RS256 signature over some DAG-CBOR:
 
 
 ```
@@ -338,6 +306,41 @@ Here is another showing a canonicalized [JWT] signed with [`secp256k1`]:
                   Keccak-256
 ```
 
+### Varsig Prefix
+
+The varsig prefix MUST be the constant `0x34`.
+
+### Signature Algorithm Metadata
+
+The varsig body MUST consist of one or more segments, and MUST be defined by the signature algorithm.
+
+Some examples include:
+
+* Raw signature bytes only
+* CID of [DKIM] certification transparency record, and raw signature bytes
+* Hash algorithm multicodec prefix, data encoding prefix, signature counter, nonce, HMAC, and raw signature bytes
+
+Here is a table of 
+
+### Payload Encoding Metadata
+
+The [IPLD] data model is encoding agnostic by design. This is very convenient in many applications, such as making for very convenient conversions between types for transmission versus encoding. Unfortunately signatures require signing over specific bytes, and thus over a specific encoding of the data.
+
+To facilitate this, the type `encoding-info` MAY be used:
+
+``` abnf
+encoding-info
+  = %x5F   ; Single verbatim payload (without key)
+  / %x70   ; DAG-PB multicodec prefix
+  / %x71   ; DAG-CBOR multicodec prefix
+  / %x0129 ; DAG-JSON multicodec prefix
+  / %x6A77 ; JWT
+  / %xE191 encoding-info ; EIP-191
+```
+
+MESSAGE LENGTH FIXME
+
+To manage this, it is RECOMMENDED that varsig types include a nested encoding multiformat.
 
 
 
