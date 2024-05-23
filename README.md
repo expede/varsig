@@ -62,7 +62,7 @@ To remedy this, varsig includes the encoding information used in production of t
 
 Since IPLD is deterministically encoded, it can be tempting to rely on canonicalization at validation time, rather than rendering the IPLD to inline bytes or a CID and signing that. Since the original payload can be rederived from the output, this can seem like a clean option:
 
-``` js copy
+```javascript copy
 // DAG-JSON
 {
   "role": "user",
