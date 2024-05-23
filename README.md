@@ -24,7 +24,8 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 # Abstract
 
-Varsig is a [multiformat][Multiformats] for describing signatures over IPLD data and raw bytes in a way that preserves information about the payload and canonicalization information.
+> [!abstract]
+> Varsig is a [multiformat][Multiformats] for describing signatures over IPLD data and raw bytes in a way that preserves information about the payload and canonicalization information.
 
 # Introduction
 
@@ -247,9 +248,7 @@ Including the varsig header in the payload that is signed over is RECOMMENDED. D
 
 ## Header
 
-The header contains metadata about both the signature and payload that was signed over. Since the 
-
-The prefix of the signature algorithm. This is often the [multicodec] of the associated public key, but MAY be unique for the signature type. The code MAY live outside the multicodec table. This field MUST act as a discriminant for how many expected fields come in the varsig body, and what each of them mean.
+A varsig header MUST metadata about both the [signature] and [payload encoding] that was signed over. Either field MAY be composed of one or more segments. The number of segments MUST be determined by the first segment. Recurive sub-segments MAY be used.
 
 A varsig header MUST begin with one or more varsig segments that desicribe.....
 
@@ -268,9 +267,8 @@ payload-encoding-metadata = unsigned-varint
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-For example, here's a 2048-bit RS256 signature over some DAG-CBOR:
-
-
+For example, an [RS256] signature over some [DAG-CBOR] would be structured as follows:
+ 
 ```
     Varisg
   Multiformat                      DAG-CBOR
@@ -288,7 +286,7 @@ For example, here's a 2048-bit RS256 signature over some DAG-CBOR:
                          (2048-bits)
 ```
 
-Here is another showing a canonicalized [JWT] signed with [`secp256k1`]:
+A (canonicalized) [JWT] signed with [`secp256k1`] would be strucutured as follows:
 
 ```
     Varisg                       JWT
@@ -308,9 +306,12 @@ Here is another showing a canonicalized [JWT] signed with [`secp256k1`]:
 
 ### Varsig Prefix
 
-The varsig prefix MUST be the constant `0x34`.
+The varsig prefix MUST be the [multicodec] value `0x34`.
 
 ### Signature Algorithm Metadata
+
+This is often the [multicodec] of the associated public key, but MAY be unique for the signature type. The code MAY live outside the multicodec table. This field MUST act as a discriminant for how many expected fields come in the varsig body, and what each of them mean.
+
 
 The varsig body MUST consist of one or more segments, and MUST be defined by the signature algorithm.
 
@@ -319,8 +320,6 @@ Some examples include:
 * Raw signature bytes only
 * CID of [DKIM] certification transparency record, and raw signature bytes
 * Hash algorithm multicodec prefix, data encoding prefix, signature counter, nonce, HMAC, and raw signature bytes
-
-Here is a table of 
 
 ### Payload Encoding Metadata
 
@@ -475,6 +474,7 @@ sig-bytes = 128(OCTET)
 
 [Header]: #header
 [Signature]: #signature
+[Common Signature Algorithms]: #common-signature-algorithms
 
 <!-- External Links -->
 
@@ -483,9 +483,11 @@ sig-bytes = 128(OCTET)
 [DAG-JSON]: https://ipld.io/specs/codecs/dag-json/spec/
 [DKIM]: https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail
 [EIP-191]: https://eips.ethereum.org/EIPS/eip-191
+[EdDSA]: https://datatracker.ietf.org/doc/html/rfc8032
 [How (not) to sign a JSON object]: https://latacora.micro.blog/2019/07/24/how-not-to.html
 [IPLD Data Model]: https://ipld.io/docs/data-model/kinds/
 [IPLD]: https://ipld.io/docs/
+[JWT]: https://www.rfc-editor.org/rfc/rfc7519
 [Multicodec]: https://github.com/multiformats/multicodec
 [Multiformats]: https://multiformats.io
 [PKI Layer Cake]: https://link.springer.com/chapter/10.1007/978-3-642-14577-3_22
@@ -493,6 +495,7 @@ sig-bytes = 128(OCTET)
 [RFC 2119]: https://datatracker.ietf.org/doc/html/rfc2119
 [RFC 7519]: https://www.rfc-editor.org/rfc/rfc7519
 [RFC 8259]: https://www.rfc-editor.org/rfc/rfc8259#page-10
+[RSASSA-PKCS #1 v1.5]: https://www.rfc-editor.org/rfc/rfc2313
 [Taxonomy of Attacks]: https://www.blackhat.com/presentations/bh-usa-07/Hill/Whitepaper/bh-usa-07-hill-WP.pdf
 [`secp256k1`]: https://en.bitcoin.it/wiki/Secp256k1
 [base64]: https://en.wikipedia.org/wiki/Base64
@@ -501,5 +504,3 @@ sig-bytes = 128(OCTET)
 [multicodec]: https://github.com/multiformats/multicodec
 [raw binary multicodec]: https://github.com/multiformats/multicodec/blob/master/table.csv#L40
 [unsigned varint]: https://github.com/multiformats/unsigned-varint
-[EdDSA]: https://datatracker.ietf.org/doc/html/rfc8032
-[RSASSA-PKCS #1 v1.5]: https://www.rfc-editor.org/rfc/rfc2313
