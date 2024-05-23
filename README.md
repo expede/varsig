@@ -62,7 +62,7 @@ To remedy this, varsig includes the encoding information used in production of t
 
 Since IPLD is deterministically encoded, it can be tempting to rely on canonicalization at validation time, rather than rendering the IPLD to inline bytes or a CID and signing that. Since the original payload can be rederived from the output, this can seem like a clean option:
 
-``` js
+``` js copy
 // DAG-JSON
 {
   "role": "user",
@@ -120,47 +120,54 @@ An application receives some block of data, as binary. It checks the claimed CID
 Decoded to a string, the above reads as follows:
 
 ```
-"{\n
-  "role": "user",\n
-  "role": "admin",\n
-  "links": [\n
-    {"/": "bafkreidb2q3ktgtlm5yio7buj3sypyghjtfh5ernsteqmakf4p2c5bwmyi"},\n
-    {"/": "bafkreic75ydg5vkw324oqkcmqltfvc3kivyngqkibjoysdwiilakh4z5fe"},\n
-    {"/": "bafkreiffdiz6raf46zrr3b2usufgz5fo44aggmocz4zappr6khhhljcdpy"}\n
-  ],\n
+{\n
+  {\n
+    "role": "user",\n
+    "role": "admin",\n
+    "links": [\n
+      {"/": "bafkreidb2q3ktgtlm5yio7buj3sypyghjtfh5ernsteqmakf4p2c5bwmyi"},\n
+      {"/": "bafkreic75ydg5vkw324oqkcmqltfvc3kivyngqkibjoysdwiilakh4z5fe"},\n
+      {"/": "bafkreiffdiz6raf46zrr3b2usufgz5fo44aggmocz4zappr6khhhljcdpy"}\n
+    ],\n
+  },\n
   "sig": "8ufaS9w3CGN8cbQTUSoL1i7eaKiWLSXsD2LbZVmvM9zF"\n
-}"
+}
 ```
 
-Note that the JSON above contains a duplicate `role` key a `sig` field with a base64 signature.
+> [!NOTE]
+> The JSON above contains a duplicate `role` key.
 
-Next, the application parses the JSON with the browser's native JSON parser.
+Next, the application parses the JSON with the browser's native JSON parser. Only one `role` key is possile in a JavaScript object, and which one is kept is not consisteny across implementations.
 
 ``` json
 {
-  "role": "admin", // Picked the second key
-  "links": [
-    {"/": "bafkreidb2q3ktgtlm5yio7buj3sypyghjtfh5ernsteqmakf4p2c5bwmyi"},
-    {"/": "bafkreic75ydg5vkw324oqkcmqltfvc3kivyngqkibjoysdwiilakh4z5fe"},
-    {"/": "bafkreiffdiz6raf46zrr3b2usufgz5fo44aggmocz4zappr6khhhljcdpy"}
-  ],
+  {
+    "role": "admin", // Picked the second key
+    "links": [
+      {"/": "bafkreidb2q3ktgtlm5yio7buj3sypyghjtfh5ernsteqmakf4p2c5bwmyi"},
+      {"/": "bafkreic75ydg5vkw324oqkcmqltfvc3kivyngqkibjoysdwiilakh4z5fe"},
+      {"/": "bafkreiffdiz6raf46zrr3b2usufgz5fo44aggmocz4zappr6khhhljcdpy"}
+    ]
+  },
   "sig": "8ufaS9w3CGN8cbQTUSoL1i7eaKiWLSXsD2LbZVmvM9zF"
 }
 ```
 
 The application MUST check the signature of all field minus the `sig` field. Under the assumption that the binary input was safe, and that canonicalization allows for the deterministic manipulation of the payload, the object is parsed to an internal IPLD representation using Rust/Wasm.
 
-``` Rust
+``` rust
 Ipld::Map([
-    ("role", Ipld::String("user")),
-    (
-        "links",
-        Ipld::Array([
-            Ipld::Cid("bafkreidb2q3ktgtlm5yio7buj3sypyghjtfh5ernsteqmakf4p2c5bwmyi"),
-            Ipld::Cid("bafkreic75ydg5vkw324oqkcmqltfvc3kivyngqkibjoysdwiilakh4z5fe"),
-            Ipld::Cid("bafkreiffdiz6raf46zrr3b2usufgz5fo44aggmocz4zappr6khhhljcdpy"),
-        ]),
-    ),
+    Ipld::Map([
+      ("role", Ipld::String("user")),
+      (
+          "links",
+          Ipld::Array([
+              Ipld::Cid("bafkreidb2q3ktgtlm5yio7buj3sypyghjtfh5ernsteqmakf4p2c5bwmyi"),
+              Ipld::Cid("bafkreic75ydg5vkw324oqkcmqltfvc3kivyngqkibjoysdwiilakh4z5fe"),
+              Ipld::Cid("bafkreiffdiz6raf46zrr3b2usufgz5fo44aggmocz4zappr6khhhljcdpy"),
+          ]),
+      )
+    ]),
     (
         "sig",
         Ipld::Binary([
@@ -169,15 +176,15 @@ Ipld::Map([
             0x59, 0xaf, 0x33, 0xdc, 0xc5,
         ]),
     ),
-]);
+])
 ```
 
 > [!NOTE]
-> Above, IPLD parser has dropped the `role: "admin"` key.
+> In our scenario, the parser has dropped the `role: "admin"` key. This is nondeterministic based on the specific implementation.
 
-The `"sig"` field is then removed, and the remaining fields serialized to binary;
+The `sig` field is then removed, and the remaining fields serialized to binary;
 
-``` Rust
+``` rust
 Ipld::serialize(
     Ipld::Map([
         ("role", Ipld::String("user")),
@@ -190,7 +197,7 @@ Ipld::serialize(
             ]),
         )
     ])
-).to_json();
+).to_json()
 ```
 
 The signature is then checked against the above fields, which passes since there's only a `role: "user"` entry. The application then uses the original JSON with the `role: "admin"` entry.
@@ -310,16 +317,11 @@ The varsig prefix MUST be the [multicodec] value `0x34`.
 
 ### Signature Algorithm Metadata
 
-This is often the [multicodec] of the associated public key, but MAY be unique for the signature type. The code MAY live outside the multicodec table. This field MUST act as a discriminant for how many expected fields come in the varsig body, and what each of them mean.
+The signature algorithm field MUST consist of one or more unsigned varint segments. The signature algorithm is often the [multicodec] of the associated public key, but MAY be unique for the signature type. The code MAY live outside the multicodec table. The first segment MUST act as a discriminant for how many expected segments follow in the signature algorithm field.
 
+``` abnf
 
-The varsig body MUST consist of one or more segments, and MUST be defined by the signature algorithm.
-
-Some examples include:
-
-* Raw signature bytes only
-* CID of [DKIM] certification transparency record, and raw signature bytes
-* Hash algorithm multicodec prefix, data encoding prefix, signature counter, nonce, HMAC, and raw signature bytes
+```
 
 ### Payload Encoding Metadata
 
