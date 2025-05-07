@@ -15,16 +15,16 @@ signature-byte-length = unsigned-varint
 
 ### Example: RS256
 
-| Segment              | Hexadecimal | Unsigned Varint | Comment                                 | 
+| Segment              | Hexadecimal | Unsigned Varint | Comment                                 |
 |----------------------|-------------|-----------------|-----------------------------------------|
-| `rsa-prefix`  | `0x1205`    | `0x8524`        | RSASSA-PKCS #1 v1.5 [multicodec] prefix |
+| `rsa-prefix`         | `0x1205`    | `0x8524`        | RSASSA-PKCS #1 v1.5 [multicodec] prefix |
 | `rsa-hash-algorithm` | `0x12`      | `0x12`          | SHA2-256 [multicodec] prefix            |
 
 ### Example: RS512
 
-| Segment              | Hexadecimal | Unsigned Varint | Comment                                 | 
+| Segment              | Hexadecimal | Unsigned Varint | Comment                                 |
 |----------------------|-------------|-----------------|-----------------------------------------|
-| `rsa-prefix`  | `0x1205`    | `0x8524`        | RSASSA-PKCS #1 v1.5 [multicodec] prefix |
+| `rsa-prefix`         | `0x1205`    | `0x8524`        | RSASSA-PKCS #1 v1.5 [multicodec] prefix |
 | `rsa-hash-algorithm` | `0x13`      | `0x13`          | SHA2-512 [multicodec] prefix            |
 
 ## [EdDSA]
@@ -38,11 +38,11 @@ eddsa-hash-algorithm = unsigned-varint
 
 ### Example: Ed25519
 
-| Segment                 | Hexadecimal | Unsigned Varint | Comment                         | 
-|-------------------------|-------------|-----------------|---------------------------------|
-| `eddsa-prefix`          | `0xED`      | `0xED01`        | EdDSA prefix
-| `eddsa-curve`           | `0xEC`      | `0xEC01`        | Curve25519 [multicodec] prefix | DOUBLE CHECK
-| `eddsa-hash-algorithm`  | `0x13`      | `0x13`          | SHA2-512 [multicodec] prefix    |
+| Segment                | Hexadecimal | Unsigned Varint | Comment                        |              |
+|------------------------|-------------|-----------------|--------------------------------|--------------|
+| `eddsa-prefix`         | `0xED`      | `0xED01`        | EdDSA prefix                   |              |
+| `eddsa-curve`          | `0xEC`      | `0xEC01`        | Curve25519 [multicodec] prefix | DOUBLE CHECK |
+| `eddsa-hash-algorithm` | `0x13`      | `0x13`          | SHA2-512 [multicodec] prefix   |              |
 
 ### Example: Ed448
 

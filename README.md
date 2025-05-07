@@ -292,17 +292,17 @@ A (canonicalized) [JWT] signed with [`secp256k1`] would be strucutured as follow
 
 ```
     Varsig
-  Multiformat      Signature         Payload
-    Prefix         Metadata         Encoding
-  ┌────┴───┐┌──────────┴─────────┐┌─────┴────┐
-  │        ││ ┏━━━━┓┏━━━━┓┏━━━━┓ ││ ┏━━━━━━┓ │
-  │  0x34  ││ ┃0xEC┃┃0xE7┃┃0x1B┃ ││ ┃0x6A77┃ │
-  │        ││ ┗━━▲━┛┗━━▲━┛┗━━▲━┛ ││ ┗━━━▲━━┛ │
-  └────────┘└────┼─────┼─────┼───┘└─────┼────┘
-                 │     │     │          │
-               ECDSA   │ Keccak-256    JWT
+  Multiformat      Signature           Payload
+    Prefix         Metadata            Encoding
+  ┌────┴───┐┌───────────┴──────────┐┌─────┴────┐
+  │        ││ ┏━━━━┓┏━━━━━━┓┏━━━━┓ ││ ┏━━━━━━┓ │
+  │  0x34  ││ ┃0xEC┃┃0x1200┃┃0x1B┃ ││ ┃0x6A77┃ │
+  │        ││ ┗━━▲━┛┗━━▲━━━┛┗━━▲━┛ ││ ┗━━━▲━━┛ │
+  └────────┘└────┼─────┼───────┼───┘└─────┼────┘
+                 │     │       │          │
+               ECDSA   │   Keccak-256    JWT
                        │
-                   secp256k1
+                     P-256
 ```
 
 ### Varsig Prefix
