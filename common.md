@@ -48,11 +48,11 @@ eddsa-hash-algorithm = unsigned-varint
 
 0x1203
 
-| Segment                 | Hexadecimal | Unsigned Varint | Comment                         | 
-|-------------------------|-------------|-----------------|---------------------------------|
-| `eddsa-prefix`          | `0xED`      | `0xED01`        | EdDSA prefix
-| `eddsa-curve`           | FIXME      | FIXME        | Curve448 [multicodec] prefix | DOUBLE CHECK
-| `eddsa-hash-algorithm`  | `0x19`      | `0x19`          | SHAKE-256 [multicodec] prefix    |
+| Segment                | Hexadecimal | Unsigned Varint | Comment                       |
+|------------------------|-------------|-----------------|-------------------------------|
+| `eddsa-prefix`         | `0xED`      | `0xED01`        | EdDSA prefix                  |
+| `eddsa-curve`          | `0x1203`    | `0x8324`        | Curve448 [multicodec] prefix  |
+| `eddsa-hash-algorithm` | `0x19`      | `0x19`          | SHAKE-256 [multicodec] prefix |
 
 ## ECDSA
 
@@ -77,9 +77,10 @@ es256-prefix = %x1200 ; P-256 multicodec prefix
 es256-hash-algorithm = %x12 ; SHA2-256
 ```
 
-| Segment                | Hexadecimal | Unsigned Varint | Comment                      | 
+| Segment                | Hexadecimal | Unsigned Varint | Comment                      |
 |------------------------|-------------|-----------------|------------------------------|
-| `es256-prefix`  | `0x1200`    | `0x8024`        | P-256 [multicodec] prefix    |
+| `ecdsa-prefix`         | `0xEC`      | `0xEC01`        | ECDSA                        |
+| `es256-prefix`         | `0x1200`    | `0x8024`        | P-256 [multicodec] prefix    |
 | `es256-hash-algorithm` | `0x12`      | `0x12`          | SHA2-256 [multicodec] prefix |
 
 ### Example: ES256K
@@ -93,10 +94,11 @@ encoding-info = 1*unsigned-varint
 sig-bytes = 64(OCTET)
 ```
 
-| Segment                 | Hexadecimal | Unsigned Varint | Comment                        | 
-|-------------------------|-------------|-----------------|--------------------------------|
-| `es256k-varsig-header`  | `0xE7`      | `0xE701`        | secp256k1 [multicodec] prefix  |
-| `es256k-hash-algorithm` | `0x12`      | `0x12`          | SHA2-256 [multicodec] prefix   |
+| Segment                 | Hexadecimal | Unsigned Varint | Comment                       |
+|-------------------------|-------------|-----------------|-------------------------------|
+| `ecdsa-prefix`          | `0xEC`      | `0xEC01`        | ECDSA                         |
+| `es256k-varsig-header`  | `0xE7`      | `0xE701`        | secp256k1 [multicodec] prefix |
+| `es256k-hash-algorithm` | `0x12`      | `0x12`          | SHA2-256 [multicodec] prefix  |
 
 ### Example: ES512
 
@@ -111,6 +113,7 @@ sig-bytes = 128(OCTET)
 
 | Segment                | Hexadecimal | Unsigned Varint | Comment                      | 
 |------------------------|-------------|-----------------|------------------------------|
+| `ecdsa-prefix`         | `0xEC`      | `0xEC01`        | ECDSA                        |
 | `es512-varsig-header`  | `0x1202`    | `0x8224`        | P-521 [multicodec] prefix    |
 | `es512-hash-algorithm` | `0x13`      | `0x13`          | SHA2-512 [multicodec] prefix |
 
