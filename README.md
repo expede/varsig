@@ -288,7 +288,7 @@ For example, an [RS256] signature over some [DAG-CBOR] is as follows:
                             SHA2-256
 ```
 
-A (canonicalized) [JWT] signed with [`secp256k1`] is as follows:
+A (canonicalized) [JWT] signed with [ES256K] is as follows:
 
 ```
     Varsig
@@ -365,6 +365,7 @@ Our gratitude to [Dave Huseby] for his parallel work and critiques of our earlie
 [DKIM]: https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail
 [Dave Huseby]: https://github.com/dhuseby
 [EIP-191]: https://eips.ethereum.org/EIPS/eip-191
+[ES256K]: https://w3c-ccg.github.io/lds-ecdsa-secp256k1-2019/
 [EdDSA]: https://datatracker.ietf.org/doc/html/rfc8032
 [How (not) to sign a JSON object]: https://latacora.micro.blog/2019/07/24/how-not-to.html
 [Hugo Dias]: https://github.com/hugomrdias
