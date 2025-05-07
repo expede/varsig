@@ -315,10 +315,10 @@ The signature algorithm field MUST consist of one or more unsigned varint segmen
 
 ``` abnf
 varsig-signature-algorithm
-  = %x1205 rsa-size hash-algorithm           ; RSASSA-PKCS #1 v1.5
-  / %xB1 bls-public-key-curve hash-algorithm ; BLS
-  / %xEC ecdsa-curve hash-algorithm          ; ECDSA
-  / %xED eddsa-curve hash-algorithm          ; EdDSA
+  = %xB1   bls-public-key-curve        multihash-header ; BLS
+  / %xEC   ecdsa-curve recovery-parity multihash-header ; ECDSA
+  / %xED   eddsa-curve                 multihash-header ; EdDSA
+  / %x1205 rsa-size                    multihash-header ; RSASSA-PKCS #1 v1.5
 ```
 
 ### Payload Encoding Metadata
