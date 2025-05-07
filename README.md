@@ -185,7 +185,7 @@ Ipld::Map([
 The `sig` field is then removed, and the remaining fields serialized to binary;
 
 ``` rust
-Ipld::serialize(
+serialize(
     Ipld::Map([
         ("role", Ipld::String("user")),
         (
@@ -204,9 +204,9 @@ The signature is then checked against the above fields, which passes since there
 
 # Safety
 
-Data that has already been parsed to an in-memory IPLD representation can be canonically encoded trivially: it has already been through a [parser / validator][Parse Don't Validate].
+Data already parsed to an in-memory IPLD representation can be canonically encoded trivially: it has already been through a [parser / validator][Parse Don't Validate].
 
-Data purporting to conform to an IPLD encoding (such as [DAG-JSON]) MUST be validated prior to signature verification. This MAY be as simple as round-trip decoding/encoding the JSON and checking that the hash matches. A validation error MUST be signalled if it does not match.
+Data purporting to conform to an IPLD encoding (such as [DAG-JSON]) MUST be validated prior to signature verification. This MAY be as simple as round-trip decoding/encoding the JSON and checking that the hash matches. A validation error MUST be signaled if it does not match.
 
 > Implementers may provide an opt-in for systems where round-trip determinism is a desireable [sic] feature and backward compatibility with old, non-strict data is unnecessary.
 >
@@ -227,7 +227,7 @@ Signing CIDs has two additional caching consequences:
 
 # Format
 
-A varsig is composed of two main segments:
+A varsig has two main segments:
 
 * [Header]: binary coded signature metadata
 * [Signature]: the signature itself
@@ -251,7 +251,7 @@ Including the varsig header in the payload that is signed over is RECOMMENDED. D
 
 ## Header
 
-A varsig header MUST metadata about both the [signature] and [payload encoding] that was signed over. Either field MAY be composed of one or more segments. The number of segments MUST be determined by the first segment. Recurive sub-segments MAY be used.
+A varsig header MUST metadata about both the [signature] and [payload encoding] that was signed over. Either field MAY be composed of one or more segments. The number of segments MUST be determined by the first segment. Recursive sub-segments MAY be used.
 
 A varsig header MUST begin with one or more varsig segments that desicribe.....
 
@@ -270,7 +270,7 @@ payload-encoding-metadata = unsigned-varint
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-For example, an [RS256] signature over some [DAG-CBOR] would be structured as follows:
+For example, an [RS256] signature over some [DAG-CBOR] is as follows:
  
 ```
    Varisg
@@ -288,7 +288,7 @@ For example, an [RS256] signature over some [DAG-CBOR] would be structured as fo
                             SHA2-256
 ```
 
-A (canonicalized) [JWT] signed with [`secp256k1`] would be strucutured as follows:
+A (canonicalized) [JWT] signed with [`secp256k1`] is as follows:
 
 ```
     Varsig
@@ -331,7 +331,7 @@ varsig-encoding-info
   / %x70                        ; DAG-PB multicodec prefix
   / %x71                        ; DAG-CBOR multicodec prefix
   / %x0129                      ; DAG-JSON multicodec prefix
-  / %x6A77                      ; JWT
+  / %x6A77                      ; Canonicalized JWT
   / %xE191 varsig-encoding-info ; EIP-191 "personal sign"
 ```
 
@@ -342,6 +342,14 @@ The associated signature bytes MUST be represented as a byte array.
 ``` abnf
 varsig-signature-bytes = 1*OCTET
 ```
+
+# Acknowledgments
+
+Many thanks to [Hugo Dias] for feedback on the spec and digging through other approaches to the problem.
+
+Thanks to [Michael Muré] for feedback from real-world implementation.
+
+Our gratitude to [Dave Huseby] for his parallel work and critiques of our earlier design.
 
 <!-- Internal Links -->
 
@@ -355,12 +363,15 @@ varsig-signature-bytes = 1*OCTET
 [CID]: https://docs.ipfs.tech/concepts/content-addressing/
 [DAG-JSON]: https://ipld.io/specs/codecs/dag-json/spec/
 [DKIM]: https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail
+[Dave Huseby]: https://github.com/dhuseby
 [EIP-191]: https://eips.ethereum.org/EIPS/eip-191
 [EdDSA]: https://datatracker.ietf.org/doc/html/rfc8032
 [How (not) to sign a JSON object]: https://latacora.micro.blog/2019/07/24/how-not-to.html
+[Hugo Dias]: https://github.com/hugomrdias
 [IPLD Data Model]: https://ipld.io/docs/data-model/kinds/
 [IPLD]: https://ipld.io/docs/
 [JWT]: https://www.rfc-editor.org/rfc/rfc7519
+[Michael Muré]: https://github.com/MichaelMure
 [Multicodec]: https://github.com/multiformats/multicodec
 [Multiformats]: https://multiformats.io
 [PKI Layer Cake]: https://link.springer.com/chapter/10.1007/978-3-642-14577-3_22
@@ -377,4 +388,3 @@ varsig-signature-bytes = 1*OCTET
 [multicodec]: https://github.com/multiformats/multicodec
 [raw binary multicodec]: https://github.com/multiformats/multicodec/blob/master/table.csv#L40
 [unsigned varint]: https://github.com/multiformats/unsigned-varint
- 
